@@ -1,0 +1,164 @@
+<template>
+  <div>
+    <div id="map"></div>
+  </div>
+</template>
+
+<style scoped>
+#map {
+  width: 100%;
+  height: 100%;
+  margin: 0px;
+  padding: 0px;
+}
+</style>
+
+<script setup>
+import mapboxgl from "mapbox-gl";
+import "mapbox-gl/dist/mapbox-gl.css";
+import { selectedLocation, selectedData, viewDetail  } from "@/store/index";
+import { fetchDetail } from "@/composables/functions";
+
+
+const props = defineProps({
+  places: Array,
+});
+
+const emit = defineEmits(["map-click"]);
+
+// const apiKey = useRuntimeConfig().public.apiKey
+const apiKey =
+  "pk.eyJ1IjoicGxhY2VsaXN0LXh5eiIsImEiOiJjbGowNWVyd2kwYmlmM2ZsbDd3dncyMDBsIn0.6fs74C_YZ61hdUSozvyK_g";
+
+let map;
+
+onMounted(() => {
+  mapboxgl.accessToken = apiKey;
+  map = new mapboxgl.Map({
+    container: "map",
+    center: [-73.9965, 40.7295],
+    zoom: 2,
+  });
+
+  map.on("load", () => {
+    map.loadImage("/cycling.png", (error, image) => {
+      if (error) throw error;
+
+      // Add the image to the map style.
+      map.addImage("cycling", image);
+    });
+    //generate geojson from places
+    const geojson = {
+      type: "FeatureCollection",
+      features: props.places.map((item) => {
+        return {
+          type: "Feature",
+          geometry: {
+            type: "Point",
+            coordinates: [item.longitude, item.latitude],
+          },
+          properties: item,
+        };
+      }),
+    };
+
+    map.addSource("places", {
+      type: "geojson",
+      data: geojson,
+    });
+
+    map.addLayer({
+      id: "places",
+      type: "symbol",
+      source: "places",
+      layout: {
+        "icon-allow-overlap": true,
+        "icon-image": "cycling",
+        "icon-size": 0.2,
+      },
+    });
+
+    // Change the cursor to a pointer when the mouse is over the places layer.
+    map.on("mouseenter", "places", () => {
+      map.getCanvas().style.cursor = "pointer";
+    });
+
+    // Change it back to a pointer when it leaves.
+    map.on("mouseleave", "places", () => {
+      map.getCanvas().style.cursor = "";
+    });
+
+    map.on("click", "places", async(e) => {
+      const features = map.queryRenderedFeatures(e.point, {
+        layers: ["places"],
+      });
+      // const features = map.queryRenderedFeatures({ layers: ["places"] });
+      const feature = features[0];
+      selectedLocation.value = feature.properties;
+      console.log(selectedLocation.value.place)
+      viewDetail.value = true;
+      selectedData.value = await fetchDetail(selectedLocation.value.place)
+    });
+
+    map.resize();
+    map.addControl(
+      new mapboxgl.GeolocateControl({
+        positionOptions: {
+          enableHighAccuracy: true,
+        },
+        // When active the map will receive updates to the device's location as it changes.
+        trackUserLocation: true,
+        // Draw an arrow next to the location dot to indicate which direction the device is heading.
+        showUserHeading: true,
+      })
+    );
+
+    var markerCoordinates = props.places.map(function (item) {
+      return [item.longitude, item.latitude];
+    });
+
+    // Create a new LngLatBounds object
+    var bounds = new mapboxgl.LngLatBounds();
+
+    // Extend the bounds object with each marker's coordinates
+    markerCoordinates.forEach(function (marker) {
+      bounds.extend(marker);
+    });
+
+    // Fit the map to the calculated bounds
+    map.fitBounds(bounds, { padding: 20, duration: 9000 });
+
+    watch(selectedLocation, (newValue, oldValue) => {
+      if (newValue) {
+        map.flyTo({
+          center: [newValue.longitude, newValue.latitude],
+          zoom: 17,
+          essential: true,
+          pitch: 60,
+        });
+
+        
+      }
+    });
+
+    watch(viewDetail, (newValue, oldValue) => {
+      if (!newValue) {
+        map.flyTo({
+          zoom: 10,
+          essential: true,
+          pitch: 0,
+          bearing:0,
+          speed: 3,
+        });
+
+        map.resize();
+      }
+    });
+
+    // map.on("moveend", () => {
+    //   dataOnView.value = map.queryRenderedFeatures({ layers: ["places"] });
+
+    // });
+  });
+});
+</script>
