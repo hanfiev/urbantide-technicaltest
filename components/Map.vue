@@ -16,9 +16,8 @@
 <script setup>
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { selectedLocation, selectedData, viewDetail  } from "@/store/index";
+import { selectedLocation, selectedData, viewDetail } from "@/store/index";
 import { fetchDetail } from "@/composables/functions";
-
 
 const props = defineProps({
   places: Array,
@@ -78,6 +77,36 @@ onMounted(() => {
       },
     });
 
+    const popup = new mapboxgl.Popup({
+      closeButton: false,
+      closeOnClick: false,
+    });
+
+    map.on("mouseenter", "places", (e) => {
+      // Change the cursor style as a UI indicator.
+      map.getCanvas().style.cursor = "pointer";
+
+      // Copy coordinates array.
+      const coordinates = e.features[0].geometry.coordinates.slice();
+      const description = e.features[0].properties.place;
+
+      // Ensure that if the map is zoomed out such that multiple
+      // copies of the feature are visible, the popup appears
+      // over the copy being pointed to.
+      while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+        coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+      }
+
+      // Populate the popup and set its coordinates
+      // based on the feature found.
+      popup.setLngLat(coordinates).setHTML(description).addTo(map);
+    });
+
+    map.on("mouseleave", "places", () => {
+      map.getCanvas().style.cursor = "";
+      popup.remove();
+    });
+
     // Change the cursor to a pointer when the mouse is over the places layer.
     map.on("mouseenter", "places", () => {
       map.getCanvas().style.cursor = "pointer";
@@ -88,16 +117,16 @@ onMounted(() => {
       map.getCanvas().style.cursor = "";
     });
 
-    map.on("click", "places", async(e) => {
+    map.on("click", "places", async (e) => {
       const features = map.queryRenderedFeatures(e.point, {
         layers: ["places"],
       });
       // const features = map.queryRenderedFeatures({ layers: ["places"] });
       const feature = features[0];
       selectedLocation.value = feature.properties;
-      console.log(selectedLocation.value.place)
+      console.log(selectedLocation.value.place);
       viewDetail.value = true;
-      selectedData.value = await fetchDetail(selectedLocation.value.place)
+      selectedData.value = await fetchDetail(selectedLocation.value.place);
     });
 
     map.resize();
@@ -137,7 +166,7 @@ onMounted(() => {
           pitch: 60,
         });
 
-        
+        map.resize();
       }
     });
 
@@ -147,7 +176,7 @@ onMounted(() => {
           zoom: 10,
           essential: true,
           pitch: 0,
-          bearing:0,
+          bearing: 0,
           speed: 3,
         });
 

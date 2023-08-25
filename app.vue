@@ -48,17 +48,36 @@
               <span class="material-symbols-rounded"> close </span>
             </div>
           </div>
-          <div class="date">21 September 2021 - 20 May 2023</div>
-          <div class="modeDetail">
-            <div class="modeDetailHeading">
+          <!-- <div v-if="selectedData" class="date">- 20 May 2023</div> -->
 
+          <div class="modeDetail">
+            <div class="mode">
+              <div class="heading">
                 <span class="material-symbols-rounded"> pedal_bike </span>
                 Bicycle
-
+              </div>
+              <div class="data">
+                <div>
+                  <span class="bold">{{ bicycleDataset.length }}</span> <br> Records <br> <span class="date">{{ bicycleStartDate }} -
+                  {{ bicycleEndDate }}</span> 
+                </div>
+                <div>
+                  <span class="bold">{{ bicycleMaxCount }}</span> <br> Max count <br> <span class="date">{{ bicycleMaxDate }}</span> 
+                </div>
+              </div>
             </div>
-            <div class="modeDetailHeading">
+            <div class="mode">
+              <div class="heading">
                 <span class="material-symbols-rounded"> directions_walk </span>
                 Pedestrian
+              </div>
+              <div class="data">
+                <div><span class="bold">{{ pedestrianDataset.length }} </span> <br> Records <br> <span class="date">{{ pedestrianStartDate }} -
+                  {{ pedestrianEndDate }}</span></div>
+                <div>
+                  <span class="bold">{{ pedestrianMaxCount }}</span> <br> Max count <br> <span class="date">{{ pedestrianMaxDate }}</span> 
+                </div>
+              </div>
             </div>
           </div>
           <Chart class="chart" :selectedData="selectedData" />
@@ -69,25 +88,30 @@
 </template>
 
 <script setup>
-import { selectedLocation, selectedData, viewDetail, pedestrianDataset, bicycleDataset  } from "@/store/index";
+import {
+  selectedLocation,
+  selectedData,
+  viewDetail,
+  pedestrianDataset,
+  bicycleDataset,
+  bicycleMaxCount,
+  bicycleMaxDate,
+  pedestrianMaxCount,
+  pedestrianMaxDate,
+  bicycleStartDate,
+  bicycleEndDate,
+  pedestrianStartDate,
+  pedestrianEndDate,
+} from "@/store/index";
 
+// Local API
 // const { data } = await useFetch("/api/detail-local");
 const locations = await useFetch("/api/locations-local");
 
+// uSmart API
 // const locations = await useFetch("/api/locations")
-// const selectedData = ref();
 
-//local handle
-// if (data) {
-//   selectedData.value = data.value.data;
-//   console.log(selectedData.value);
-// }
-
-import { fetchDetail } from "@/composables/functions";
-
-
-
-const cleanedData = ref();
+import { fetchDetail, dateConverter } from "@/composables/functions";
 
 // process the data from the API by using a nested loop, into a single level array of objects.
 const flattenedData = [];
@@ -121,21 +145,59 @@ const filteredItems = computed(() => {
 });
 
 //handle list click
-const testData = ref()
 
-const handleListClick = async(e) => {
+const handleListClick = async (e) => {
   const place = e.target.innerText;
   const selected = flattenedData.filter((item) => item.place === place);
   selectedLocation.value = selected[0];
   viewDetail.value = true;
-  pedestrianDataset.value = []
-  bicycleDataset.value = []
-  selectedData.value = await fetchDetail(place)
+  pedestrianDataset.value = [];
+  bicycleDataset.value = [];
+  selectedData.value = await fetchDetail(place);
 };
 
 const handleCloseViewDetail = () => {
   viewDetail.value = false;
 };
+
+watch(bicycleDataset, () => {
+  if (bicycleDataset.value.length === 0) return;
+  console.log(bicycleDataset.value);
+  bicycleMaxCount.value = 0
+  pedestrianMaxCount.value = 0
+  bicycleMaxDate.value = ""
+  pedestrianMaxDate.value = ""
+
+  bicycleDataset.value.forEach((item) => {
+    if (item.y >= bicycleMaxCount.value) {
+      bicycleMaxCount.value = item.y;
+      bicycleMaxDate.value = item.x;
+    }
+  });
+  bicycleMaxDate.value = dateConverter(bicycleMaxDate.value);
+
+  bicycleStartDate.value = bicycleDataset.value[0].x;
+  bicycleStartDate.value = dateConverter(bicycleStartDate.value);
+  bicycleEndDate.value = bicycleDataset.value[bicycleDataset.value.length - 1].x;
+  bicycleEndDate.value = dateConverter(bicycleEndDate.value);
+
+  pedestrianDataset.value.forEach((item) => {
+    if (item.y >= pedestrianMaxCount.value) {
+      pedestrianMaxCount.value = item.y;
+      pedestrianMaxDate.value = item.x;
+    }
+  });
+
+  pedestrianMaxDate.value = dateConverter(pedestrianMaxDate.value);
+    
+    pedestrianStartDate.value = pedestrianDataset.value[0].x;
+    pedestrianStartDate.value = dateConverter(pedestrianStartDate.value);
+    pedestrianEndDate.value = pedestrianDataset.value[pedestrianDataset.value.length - 1].x;
+    pedestrianEndDate.value = dateConverter(pedestrianEndDate.value);
+});
+
+const dataStartDate = ref();
+const dataEndDate = ref();
 </script>
 
 <style lang="scss">
@@ -280,12 +342,39 @@ body {
   gap: 10px;
   margin-top: 10px;
   align-items: center;
+  justify-content: space-evenly;
 }
 
-.modeDetail .modeDetailHeading {
+.modeDetail .mode {
+  width: 100%;
+}
+
+.modeDetail .heading {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 10px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.modeDetail .data {
+  font-size: 9pt;
+  font-weight: 700;
+  display: flex;
+  gap: 30px;
+  text-transform: uppercase;
+  
+}
+
+.modeDetail .data .bold {
+  font-weight: 700;
+}
+
+.modeDetail .data .date {
+  color: #737373;
+  font-weight: 500;
+  font-size: 9pt !important;
+  text-transform: uppercase;
 }
 </style>
 ```

@@ -53,7 +53,7 @@ const props = defineProps({
 
 watch(props, () => {
   // extract the bicycle data
-  console.log(props.selectedData);
+
   bicycleData.value = props.selectedData.value.filter(
     (item) => item["Class Name"] === "bicycle"
   );
@@ -203,7 +203,7 @@ const chartOptions = ref({
   scales: {
     x: {
       type: "time",
-      min: moment().subtract(60, "days"),
+      // min: moment().subtract(60, "days"),
       time: {
         unit: "day",
       },
