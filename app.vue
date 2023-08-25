@@ -125,12 +125,12 @@ import {
 
 import { fetchDetail, dateConverter } from "@/composables/functions";
 
-// Fetch the data from the local API
+// Fetch the locations data to draw on the map
 /// Local API
-const locations = await useFetch("/api/locations-local");
+// const locations = await useFetch("/api/locations-local");
 
 /// uSmart API
-// const locations = await useFetch("/api/locations")
+const locations = await useFetch("/api/locations")
 
 // transform the data from the API into a single level array of objects by using a nested loop, 
 const flattenedData = [];
