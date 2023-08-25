@@ -26,8 +26,7 @@ const props = defineProps({
 const emit = defineEmits(["map-click"]);
 
 // const apiKey = useRuntimeConfig().public.apiKey
-const apiKey =
-  "pk.eyJ1IjoicGxhY2VsaXN0LXh5eiIsImEiOiJjbGowNWVyd2kwYmlmM2ZsbDd3dncyMDBsIn0.6fs74C_YZ61hdUSozvyK_g";
+const apiKey = "pk.eyJ1IjoicGxhY2VsaXN0LXh5eiIsImEiOiJjbGowNWVyd2kwYmlmM2ZsbDd3dncyMDBsIn0.6fs74C_YZ61hdUSozvyK_g";
 
 let map;
 
@@ -46,7 +45,7 @@ onMounted(() => {
       // Add the image to the map style.
       map.addImage("cycling", image);
     });
-    //generate geojson from places
+    //generate geojson from places prop
     const geojson = {
       type: "FeatureCollection",
       features: props.places.map((item) => {
@@ -107,21 +106,11 @@ onMounted(() => {
       popup.remove();
     });
 
-    // Change the cursor to a pointer when the mouse is over the places layer.
-    map.on("mouseenter", "places", () => {
-      map.getCanvas().style.cursor = "pointer";
-    });
-
-    // Change it back to a pointer when it leaves.
-    map.on("mouseleave", "places", () => {
-      map.getCanvas().style.cursor = "";
-    });
 
     map.on("click", "places", async (e) => {
       const features = map.queryRenderedFeatures(e.point, {
         layers: ["places"],
       });
-      // const features = map.queryRenderedFeatures({ layers: ["places"] });
       const feature = features[0];
       selectedLocation.value = feature.properties;
       console.log(selectedLocation.value.place);
@@ -130,18 +119,8 @@ onMounted(() => {
     });
 
     map.resize();
-    map.addControl(
-      new mapboxgl.GeolocateControl({
-        positionOptions: {
-          enableHighAccuracy: true,
-        },
-        // When active the map will receive updates to the device's location as it changes.
-        trackUserLocation: true,
-        // Draw an arrow next to the location dot to indicate which direction the device is heading.
-        showUserHeading: true,
-      })
-    );
 
+    // Create an array of the bound coordinates for each marker
     var markerCoordinates = props.places.map(function (item) {
       return [item.longitude, item.latitude];
     });
@@ -157,6 +136,7 @@ onMounted(() => {
     // Fit the map to the calculated bounds
     map.fitBounds(bounds, { padding: 20, duration: 9000 });
 
+    // zoom to the selected location when selectedLocation updated
     watch(selectedLocation, (newValue, oldValue) => {
       if (newValue) {
         map.flyTo({
@@ -170,6 +150,7 @@ onMounted(() => {
       }
     });
 
+    // zoom out the map when viewDetail is false
     watch(viewDetail, (newValue, oldValue) => {
       if (!newValue) {
         map.flyTo({
@@ -184,10 +165,6 @@ onMounted(() => {
       }
     });
 
-    // map.on("moveend", () => {
-    //   dataOnView.value = map.queryRenderedFeatures({ layers: ["places"] });
-
-    // });
   });
 });
 </script>
