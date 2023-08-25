@@ -1,5 +1,5 @@
 export const selectedLocation = ref([])
-export const viewDetail = ref(true)
+export const viewDetail = ref(false)
 
 export const selectedData = ref()
 

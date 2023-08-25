@@ -58,11 +58,16 @@
               </div>
               <div class="data">
                 <div>
-                  <span class="bold">{{ bicycleDataset.length }}</span> <br> Records <br> <span class="date">{{ bicycleStartDate }} -
-                  {{ bicycleEndDate }}</span> 
+                  <span class="bold">{{ bicycleDataset.length }}</span> <br />
+                  Records <br />
+                  <span class="date"
+                    >{{ bicycleStartDate }} - {{ bicycleEndDate }}</span
+                  >
                 </div>
                 <div>
-                  <span class="bold">{{ bicycleMaxCount }}</span> <br> Max count <br> <span class="date">{{ bicycleMaxDate }}</span> 
+                  <span class="bold">{{ bicycleMaxCount }}</span> <br />
+                  Max count <br />
+                  <span class="date">{{ bicycleMaxDate }}</span>
                 </div>
               </div>
             </div>
@@ -72,10 +77,18 @@
                 Pedestrian
               </div>
               <div class="data">
-                <div><span class="bold">{{ pedestrianDataset.length }} </span> <br> Records <br> <span class="date">{{ pedestrianStartDate }} -
-                  {{ pedestrianEndDate }}</span></div>
                 <div>
-                  <span class="bold">{{ pedestrianMaxCount }}</span> <br> Max count <br> <span class="date">{{ pedestrianMaxDate }}</span> 
+                  <span class="bold">{{ pedestrianDataset.length }} </span>
+                  <br />
+                  Records <br />
+                  <span class="date"
+                    >{{ pedestrianStartDate }} - {{ pedestrianEndDate }}</span
+                  >
+                </div>
+                <div>
+                  <span class="bold">{{ pedestrianMaxCount }}</span> <br />
+                  Max count <br />
+                  <span class="date">{{ pedestrianMaxDate }}</span>
                 </div>
               </div>
             </div>
@@ -163,10 +176,10 @@ const handleCloseViewDetail = () => {
 watch(bicycleDataset, () => {
   if (bicycleDataset.value.length === 0) return;
   console.log(bicycleDataset.value);
-  bicycleMaxCount.value = 0
-  pedestrianMaxCount.value = 0
-  bicycleMaxDate.value = ""
-  pedestrianMaxDate.value = ""
+  bicycleMaxCount.value = 0;
+  pedestrianMaxCount.value = 0;
+  bicycleMaxDate.value = "";
+  pedestrianMaxDate.value = "";
 
   bicycleDataset.value.forEach((item) => {
     if (item.y >= bicycleMaxCount.value) {
@@ -178,7 +191,8 @@ watch(bicycleDataset, () => {
 
   bicycleStartDate.value = bicycleDataset.value[0].x;
   bicycleStartDate.value = dateConverter(bicycleStartDate.value);
-  bicycleEndDate.value = bicycleDataset.value[bicycleDataset.value.length - 1].x;
+  bicycleEndDate.value =
+    bicycleDataset.value[bicycleDataset.value.length - 1].x;
   bicycleEndDate.value = dateConverter(bicycleEndDate.value);
 
   pedestrianDataset.value.forEach((item) => {
@@ -189,11 +203,12 @@ watch(bicycleDataset, () => {
   });
 
   pedestrianMaxDate.value = dateConverter(pedestrianMaxDate.value);
-    
-    pedestrianStartDate.value = pedestrianDataset.value[0].x;
-    pedestrianStartDate.value = dateConverter(pedestrianStartDate.value);
-    pedestrianEndDate.value = pedestrianDataset.value[pedestrianDataset.value.length - 1].x;
-    pedestrianEndDate.value = dateConverter(pedestrianEndDate.value);
+
+  pedestrianStartDate.value = pedestrianDataset.value[0].x;
+  pedestrianStartDate.value = dateConverter(pedestrianStartDate.value);
+  pedestrianEndDate.value =
+    pedestrianDataset.value[pedestrianDataset.value.length - 1].x;
+  pedestrianEndDate.value = dateConverter(pedestrianEndDate.value);
 });
 
 const dataStartDate = ref();
@@ -363,7 +378,6 @@ body {
   display: flex;
   gap: 30px;
   text-transform: uppercase;
-  
 }
 
 .modeDetail .data .bold {
